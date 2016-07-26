@@ -1,0 +1,3 @@
+sudo ./mongoexport --host localhost --db imdb --collection movies --csv --out /opt/mapr/text2.csv --fields Title,Year,Rated,Released,Runtime,Genre,Director,Writer,Actors,Plot,Language,Country,Awards,Poster,Metascore,imdbRating,imdbVotes,imdbID,Type,Response;
+
+'Chauranga' 'Wazir' 'Airlift' 'Jugni' 'Mastizaade' 'Fitoor' 'Neerja' 'Aligarh' 'Zubaan' 'Fan' 'Baaghi' 'Traffic' 'Azhar' 'Sarbjit' 'Cabaret' 'Phobia' 'Veerappan' 'Fredrick' 'Waiting' 'Housefull 3' 'Raaz Rebooted' 'Dhanak' 'Te3n' 'Junooniyat' 'Scandall'
