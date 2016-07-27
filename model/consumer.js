@@ -1,5 +1,5 @@
 var mongodb = require('mongodb');
-var LinR = require('./model');
+var LinR = require('./testmodel');
 var input = new Array();
 
 var drama= 0;
@@ -56,10 +56,6 @@ sentimentsc.find(query_sentiment).sort({_id:-1}).limit(1).toArray(function (err,
        var genre = result[0].Genre;
        var director = result[0].Director;
        var actor = result[0].Actors;
- /*      
-console.log("Actor: " + actor);
-console.log("Director: "+ director);
-console.log("Genre: "+ genre);*/
 
        if(genre.indexOf(',') > -1)
      {
@@ -151,8 +147,7 @@ console.log("Genre: "+ genre);*/
                  // code
          }
      }
-  
-      if(LinR.goodDirec.indexOf(director) > -1)
+        if(LinR.goodDirec.indexOf(director) > -1)
      {
          input.push(2);
      }
@@ -204,7 +199,7 @@ console.log("Genre: "+ genre);*/
 
      
      console.log("Input to Model: " + input);
-     
+    
       var prating = res.predict(input);
       console.log("Movie Rating predicted: "+ Number(parseFloat(prating.toFixed(1))));
        

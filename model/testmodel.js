@@ -1,6 +1,6 @@
 var csv = require("fast-csv");
 var LinearRegression = require("shaman/index").LinearRegression;
-
+var mongodb = require('mongodb');
 var lr = null;
 var singleinput = new Array(); 
 var outputparam = new Array(); 
@@ -10,33 +10,59 @@ var baddirector = new Array();
 var mediocredirector = new Array();
 var greatactors = ["amitabh bachchan", "salman khan","amir khan","shahrukh khan","ranbir kapoor","ranveer singh","deepika padukone","akshay kumar"];
 var goodactors = ["irrfan khan","nawazuddin siddiqui","naseeruddin shah","paresh rawal"];
+var MongoClient = mongodb.MongoClient;
+var url = 'mongodb://localhost:27017/imdb';
 
 exports.getModel = function(callback){
-csv
- .fromPath("text2.csv",{headers:true,escape:'"'})
- .on("data", function(data){
-     
-     var row = data;
-     var drama= 0;
-     var action=0;
-     var crime=0;
-     var comedy=0;
-     var biography = 0;
-     var thriller=0;
-     var romance=0;
-     var history=0;
-     var sport=0;
-     var mystery=0;
-     var musical=0;
-     var positivescore = 0;
-     var negativescore = 0;
-     
+
+MongoClient.connect(url, function (err, db) {
+  
+  if (err) {
+    console.log('Unable to connect to the mongoDB server. Error:', err);
+  } 
+  
+  else 
+  {
+	//console.log('Connection established from training model to', url);
+    
+    var collection = db.collection('movies');
+    var sentimentsc = db.collection('sentimentScore');
+	
+	collection.find().toArray(function (err, result) {
+	
+	if (err) {
+        console.log(err);
+      } 
+	  else if (result.length){
+	
+    // console.log("Length: "+ result.length);
+
     // var array = row.split(',');
      var genre = ["Drama", "Action", "Crime","Comedy","Biography","Thriller","Romance", "History", "Sport", "Mystery","Musical"];
-     var input= new Array();
+	 
+	 for(var i in result){
+
+	var drama= 0;
+	var action=0;
+	var crime=0;
+	var comedy=0;
+	var biography = 0;
+	var thriller=0;
+	var romance=0;
+	var history=0;
+	var sport=0;
+	var mystery=0;
+	var musical=0;
+	var positivescore = 0;
+	var negativescore = 0;
+	 
+	 var input= new Array();
      var output = new Array();
      
-     var g = row.Genre;
+	if(result[i].Error == undefined)
+	{
+     var g = result[i].Genre;
+	
      if(g.indexOf(',') > -1)
      {
          var genrearray = g.split(',');
@@ -88,7 +114,7 @@ csv
      }
      else
      {
-         switch (row.Genre.toLowerCase()) {
+         switch (result[i].Genre.toLowerCase()) {
              case 'drama':
                  drama = 1;
                  break;
@@ -127,35 +153,35 @@ csv
                  // code
          }
      }
-     
-     //Derive director rating out from movie rating
-     if(row.imdbRating != undefined && row.imdbRating != "N/A")
+          //Derive director rating out from movie rating
+     if(result[i].imdbRating != undefined && result[i].imdbRating != "N/A")
      {
-         if(row.imdbRating > 7)
+         if(result[i].imdbRating > 7)
          {
             input.push(2); 
-            gooddirector.push(row.Director);
+            gooddirector.push(result[i].Director);
          }
-         else if(5 < row.imdbRating && row.imdbRating < 7)
+         else if(5 < result[i].imdbRating && result[i].imdbRating < 7)
          {
              input.push(1); 
-             mediocredirector.push(row.Director);
+             mediocredirector.push(result[i].Director);
          }
          else
          {
              input.push(0); 
-             baddirector.push(row.Director);
+             baddirector.push(result[i].Director);
          }
          
      }
      else
      {
              input.push(0); 
-             baddirector.push(row.Director);
+             baddirector.push(result[i].Director);
      }
      
      //Derive actors rating
-     var actors = row.Actors.split(',');
+	
+     var actors = result[i].Actors.split(',');
      var rating = 0;
      for (var a in actors) {
          
@@ -190,12 +216,12 @@ csv
    input.push(drama);
    input.push(action);
    
-   positivescore = row.PositiveScore;
-   negativescore = row.NegativeScore;
+   positivescore = result[i].PositiveScore;
+   negativescore = result[i].NegativeScore;
    
    if((positivescore == "N/A" || positivescore == undefined || positivescore == "") && (negativescore == "N/A" || negativescore == undefined || negativescore == "") )
    {
-      if(row.imdbRating >= 7)
+      if(result[i].imdbRating >= 7)
       {
        //positivescore = getRandomArbitrary(0.4,0.6);
        positivescore = 0.65;
@@ -205,7 +231,7 @@ csv
        negativescore = 0.13;
 	input.push(Number(parseFloat(negativescore.toFixed(2))));
       }
-      else if(5 <= row.imdbRating && row.imdbRating < 7 )
+      else if(5 <= result[i].imdbRating && result[i].imdbRating < 7 )
       {
         //positivescore = getRandomArbitrary(0.2,0.4);
        positivescore = 0.35; 
@@ -234,70 +260,44 @@ csv
     
    }
    
-   
-  /*  if(negativescore == "N/A" || negativescore == undefined || negativescore == "")
-   {
-      if(row.imdbRating >= 7)
-      {
-       negativescore = getRandomArbitrary(0.4,0.6);
-       input.push(Number(parseFloat(negativescore.toFixed(2))));
-      }
-      else if(5 <= row.imdbRating < 7 )
-      {
-        negativescore = getRandomArbitrary(0.2,0.4);
-        input.push(Number(parseFloat(negativescore.toFixed(2))));
-      }
-      else
-      {
-         negativescore = getRandomArbitrary(0.1,0.2);
-         input.push(Number(parseFloat(negativescore.toFixed(2))));
-      }
-    
-   }
-   else
-   {
-    input.push(Number(negativescore)); 
-    
-   }
-   */
-  
-   
-   if(row.imdbRating != "N/A")
-      output.push(parseFloat(row.imdbRating));
+   if(result[i].imdbRating != "N/A")
+      output.push(parseFloat(result[i].imdbRating));
    else
       output.push(parseFloat("0"));
      
    singleinput.push(input);
      
    outputparam.push(output);
+	 
+	 }
+    }
+	 //Predict the model
+	 
+		/*console.log("Input");
+		console.log(singleinput);
+		console.log("Output");
+		console.log(outputparam);*/
+	 
+		lr = new LinearRegression(singleinput,  outputparam,{
+		algorithm: 'GradientDescent',
+		saveCosts: true // defaults to false 
+		});
+        
+       	 lr.train(function(err) {   
+       		if (err) { 
+        		throw err; 
+       	}       
+        	}); 
+        
+       // var m = [  2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0.4, 0 ];
+       // console.log(lr.predict(m));
+        return callback(lr); 
+    } 
       
-     
- })
- .on("end", function(){
-     
-     /* console.log("Input");
-     console.log(singleinput);
-     console.log("Output");
-     console.log(outputparam);*/
-    lr = new LinearRegression(singleinput,  outputparam,{
-    algorithm: 'GradientDescent',
-    saveCosts: true // defaults to false 
-    });
-        
-        lr.train(function(err) {
-   
-       if (err) { 
-        throw err; 
-       }
-       
-        }); 
-        
-        //var m = [  2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0.4, 0 ];
-        //console.log(lr.predict(m));
-        
-       return callback(lr);
-   
  });
+}
+
+});
 }
 
 
