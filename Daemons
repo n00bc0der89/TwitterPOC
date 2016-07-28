@@ -1,0 +1,35 @@
+ sudo ./zookeeper-server-start.sh -daemon ../config/zookeeper.properties
+ sudo ./kafka-server-start.sh -daemon ../config/server.properties
+ ./mongod --fork --logpath /opt/mapr/mongodb-linux-x86_64-rhel62-3.2.7/log
+nohup sh kafkanodedaemon.sh &
+nohup sudo ./flume-ng agent -n TwitterAgent -f ../../twitterfeed.conf &
+
+-------------------------------------------------------------------------------------------
+
+Background process - 
+---------------------------------------
+
+ sudo /opt/mapr/kafka_2.11-0.10.0.0/bin/zookeeper-server-start.sh -daemon /opt/mapr/kafka_2.11-0.10.0.0/config/zookeeper.properties
+ sudo /opt/mapr/kafka_2.11-0.10.0.0/bin/kafka-server-start.sh -daemon /opt/mapr/kafka_2.11-0.10.0.0/config/server.properties
+/opt/mapr/mongodb-linux-x86_64-rhel62-3.2.7/bin/mongod --fork --logpath /opt/mapr/mongodb-linux-x86_64-rhel62-3.2.7/log
+
+
+----------------------------------
+Run commands in nohup -
+----------------------------------
+	
+nohup sh /opt/mapr/kafkanode/kafkanodedaemon.sh &
+nohup sudo /opt/mapr/apache-flume-1.6.0-bin/bin/flume-ng agent -n TwitterAgent -f /opt/mapr/twitterfeed.conf &
+
+---------------------------------
+Crontab process - 
+---------------------------------
+
+Mongoscript - (Runs every 10 minutes)
+
+*/10 * * * * /opt/mapr/mongodb-linux-x86_64-rhel62-3.2.7/bin/mongo imdb /opt/mapr/loadSentimentScore.js
+
+IMDB pull - (Runs every Friday )
+0 0 * * FRI 
+
+

@@ -1,0 +1,1 @@
+node /opt/mapr/kafkanode/kafka-node-consumer.js
