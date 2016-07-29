@@ -8,10 +8,12 @@ var outputparam = new Array();
 var gooddirector=new Array();
 var baddirector = new Array();
 var mediocredirector = new Array();
-var greatactors = ["amitabh bachchan", "salman khan","amir khan","shahrukh khan","ranbir kapoor","ranveer singh","deepika padukone","akshay kumar"];
-var goodactors = ["irrfan khan","nawazuddin siddiqui","naseeruddin shah","paresh rawal"];
+var greatactors = ["amitabh bachchan", "salman khan","amir khan","shahrukh khan","ranbir kapoor","ranveer singh","deepika padukone","akshay kumar","priyanka chopra","aishwarya"];
+var goodactors = ["irrfan khan","nawazuddin siddiqui","naseeruddin shah","paresh rawal","nana patekar","john abraham","katrina kaif","manoj bajpai","kareena kapoor"];
 var MongoClient = mongodb.MongoClient;
 var url = 'mongodb://localhost:27017/imdb';
+var query_sentiment={};
+var sentimentObj = null;
 
 exports.getModel = function(callback){
 
@@ -28,7 +30,7 @@ MongoClient.connect(url, function (err, db) {
     var collection = db.collection('movies');
     var sentimentsc = db.collection('sentimentScore');
 	
-	collection.find().toArray(function (err, result) {
+	collection.aggregate([ { $lookup: { from:"sentimentScore", localField:"Title", foreignField:"movie", as:"moviename" } } ]).toArray(function (err, result) {
 	
 	if (err) {
         console.log(err);
@@ -61,8 +63,9 @@ MongoClient.connect(url, function (err, db) {
      
 	if(result[i].Error == undefined)
 	{
+
      var g = result[i].Genre;
-	
+	console.log("Movie "+ result[i].Title);
      if(g.indexOf(',') > -1)
      {
          var genrearray = g.split(',');
@@ -216,10 +219,26 @@ MongoClient.connect(url, function (err, db) {
    input.push(drama);
    input.push(action);
    
-   positivescore = result[i].PositiveScore;
-   negativescore = result[i].NegativeScore;
+   //positivescore = result[i].PositiveScore;
+   //negativescore = result[i].NegativeScore;
+
+sentimentObject = result[i].moviename;
+var pavg =0;
+var navg =0;
+var count =0;
+if(sentimentObject != undefined)
+{
+for(var index in sentimentObject)
+{
+pavg += sentimentObject[index].positivescore;
+navg += sentimentObject[index].negativescore;
+count++;
+}
+positivescore = pavg/count;
+negativescore = navg/count;
+}
    
-   if((positivescore == "N/A" || positivescore == undefined || positivescore == "") && (negativescore == "N/A" || negativescore == undefined || negativescore == "") )
+  /* if((positivescore == "N/A" || positivescore == undefined || positivescore == "") && (negativescore == "N/A" || negativescore == undefined || negativescore == "") )
    {
       if(result[i].imdbRating >= 7)
       {
@@ -258,8 +277,19 @@ MongoClient.connect(url, function (err, db) {
     input.push(Number(positivescore));
     input.push(Number(negativescore)); 
     
-   }
-   
+   }*/
+
+if(positivescore >= 0 && negativescore >= 0)
+{
+  input.push(Number(parseFloat(positivescore.toFixed(2))));
+  input.push(Number(parseFloat(negativescore.toFixed(2)))); 
+}
+else
+{
+  input.push(Number(0));
+  input.push(Number(0)); 
+
+}
    if(result[i].imdbRating != "N/A")
       output.push(parseFloat(result[i].imdbRating));
    else
@@ -273,10 +303,10 @@ MongoClient.connect(url, function (err, db) {
     }
 	 //Predict the model
 	 
-		/*console.log("Input");
+		console.log("Input");
 		console.log(singleinput);
 		console.log("Output");
-		console.log(outputparam);*/
+		console.log(outputparam);
 	 
 		lr = new LinearRegression(singleinput,  outputparam,{
 		algorithm: 'GradientDescent',
