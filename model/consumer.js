@@ -13,6 +13,7 @@ var drama= 0;
  var sport=0;
  var mystery=0;
  var musical=0;
+var imdbRating = 0;
 var positivescore = 0;
 var negativescore = 0;
 var query_movie= {};
@@ -22,7 +23,7 @@ var MongoClient = mongodb.MongoClient;
 
 var url = 'mongodb://localhost:27017/imdb';
 var moviename = process.argv[2];
-console.log(moviename);
+//console.log(moviename);
 query_sentiment['movie']= moviename;
 query_movie['Title']=moviename;
 
@@ -56,6 +57,7 @@ sentimentsc.find(query_sentiment).sort({_id:-1}).limit(1).toArray(function (err,
        var genre = result[0].Genre;
        var director = result[0].Director;
        var actor = result[0].Actors;
+	imdbRating = result[0].imdbRating;
 
        if(genre.indexOf(',') > -1)
      {
@@ -147,7 +149,7 @@ sentimentsc.find(query_sentiment).sort({_id:-1}).limit(1).toArray(function (err,
                  // code
          }
      }
-        if(LinR.goodDirec.indexOf(director) > -1)
+       if(LinR.goodDirec.indexOf(director) > -1)
      {
          input.push(2);
      }
@@ -198,8 +200,9 @@ sentimentsc.find(query_sentiment).sort({_id:-1}).limit(1).toArray(function (err,
    input.push(Number(parseFloat(negativescore.toFixed(2))));
 
      
-     console.log("Input to Model: " + input);
-    
+       console.log("Input to Model: " + input);
+    	console.log("Movie to predict: "+ moviename);
+	console.log("IMDB rating of the movie: "+ imdbRating);
       var prating = res.predict(input);
       console.log("Movie Rating predicted: "+ Number(parseFloat(prating.toFixed(1))));
        
