@@ -8,7 +8,7 @@ var outputparam = new Array();
 var gooddirector=new Array();
 var baddirector = new Array();
 var mediocredirector = new Array();
-var greatactors = ["amitabh bachchan", "salman khan","amir khan","shahrukh khan","ranbir kapoor","ranveer singh","deepika padukone","akshay kumar","priyanka chopra","aishwarya"];
+var greatactors = ["amitabh bachchan", "salman khan","amir khan","shahrukh khan","ranbir kapoor","ranveer singh","deepika padukone","akshay kumar","priyanka chopra","aishwarya","sanjay dutt"];
 var goodactors = ["irrfan khan","nawazuddin siddiqui","naseeruddin shah","paresh rawal","nana patekar","john abraham","katrina kaif","manoj bajpai","kareena kapoor"];
 var MongoClient = mongodb.MongoClient;
 var url = 'mongodb://localhost:27017/imdb';
@@ -41,7 +41,7 @@ MongoClient.connect(url, function (err, db) {
 
     // var array = row.split(',');
      var genre = ["Drama", "Action", "Crime","Comedy","Biography","Thriller","Romance", "History", "Sport", "Mystery","Musical"];
-	 
+	 var counter = 0;
 	 for(var i in result){
 
 	var drama= 0;
@@ -61,11 +61,11 @@ MongoClient.connect(url, function (err, db) {
 	 var input= new Array();
      var output = new Array();
      
-	if(result[i].Error == undefined)
+	if(result[i].Error == undefined && result[i].imdbRating != "N/A")
 	{
-
+	counter++;
      var g = result[i].Genre;
-	console.log("Movie "+ result[i].Title);
+	//console.log("Movie "+ result[i].Title);
      if(g.indexOf(',') > -1)
      {
          var genrearray = g.split(',');
@@ -318,7 +318,7 @@ else
         		throw err; 
        	}       
         	}); 
-        
+        console.log("Total movies processed: "+ counter);
        // var m = [  2, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0.4, 0 ];
        // console.log(lr.predict(m));
         return callback(lr); 
